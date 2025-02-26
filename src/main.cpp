@@ -19,7 +19,8 @@ void performJumpscare(std::string reason, std::string modSetting, bool isTest = 
 
 	if (!jumpscareImage) {
 		if (enableLogging) log::debug("Jumpscare on {} failed - invalid image.", reason);
-		return FLAlertLayer::create("Fail", "Error getting image.", "OK")->show();
+		if (isTest) FLAlertLayer::create("Fail", "Error getting image.", "OK")->show();
+		return;
 	}
 	if (!enableMod) {
 		if (enableLogging) log::debug("Jumpscare on {} was not performed - mod is disabled.", reason);
