@@ -1,4 +1,4 @@
-#include "test_jumpscare_button_setting.cpp"
+#include "TestJumpscareSetting.hpp"
 #include <Geode/modify/PauseLayer.hpp>
 #include <Geode/modify/CCDirector.hpp>
 #include <Geode/modify/MenuLayer.hpp>
