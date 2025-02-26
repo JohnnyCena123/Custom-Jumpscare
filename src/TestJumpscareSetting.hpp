@@ -1,16 +1,10 @@
-// copying code from the geode docs :fire: (like firee the geode mod dev aaaaaaa im going insane help me reddit isnt good for mental health)
+#pragma once
 
 #include <Geode/loader/SettingV3.hpp>
 #include <Geode/loader/Mod.hpp>
 
-#include <Geode/binding/ButtonSprite.hpp>
-#include <Geode/binding/CCMenuItemSpriteExtra.hpp>
-#include <Geode/binding/FLAlertLayer.hpp>
-
-
 class TestJumpscareSettingV3 : public SettingV3 {
 public:
-
     static Result<std::shared_ptr<SettingV3>> parse(std::string const& key, std::string const& modID, matjson::Value const& json) {
         auto res = std::make_shared<TestJumpscareSettingV3>();
         auto root = checkJson(json, "TestJumpscareSettingV3");
@@ -22,20 +16,10 @@ public:
         root.checkUnknownKeys();
         return root.ok(std::static_pointer_cast<SettingV3>(res));
     }
-
-    bool load(matjson::Value const& json) override {
-        return true;
-    }
-
-    bool save(matjson::Value& json) const override {
-        return true;
-    }
-
-    bool isDefaultValue() const override {
-        return true;
-    }
+    bool load(matjson::Value const& json) override { return true; }
+    bool save(matjson::Value& json) const override { return true; }
+    bool isDefaultValue() const override { return true; }
     void reset() override {}
-
     SettingNodeV3* createNode(float width) override;
 };
 
@@ -51,7 +35,7 @@ protected:
         m_buttonSprite = ButtonSprite::create("Click Me!", "goldFont.fnt", "GJ_button_01.png", .8f);
         m_buttonSprite->setScale(.5f);
         m_button = CCMenuItemSpriteExtra::create(
-            m_buttonSprite, this, menu_selector(TestJumpscareSettingNodeV3::OnTestJumpscare)
+            m_buttonSprite, this, menu_selector(TestJumpscareSettingNodeV3::onTestJumpscare)
         );
         this->getButtonMenu()->addChildAtPosition(m_button, Anchor::Center);
         this->getButtonMenu()->setContentWidth(60);
@@ -72,8 +56,8 @@ protected:
         m_buttonSprite->setOpacity(shouldEnable ? 255 : 155);
         m_buttonSprite->setColor(shouldEnable ? ccWHITE : ccGRAY);
     }
-    void OnTestJumpscare(CCObject*) {
-        if (PerformJumpscare("test jumpscare", "hi this string is pretty useless lol", true) == 0) FLAlertLayer::create("Fail", "Error getting image.", "OK")->show();
+    void onTestJumpscare(CCObject*) {
+        performJumpscare("testing jumpscare", "TestJumpscare", true);
     }
     void onCommit() override {}
     void onResetToDefault() override {}
@@ -88,29 +72,16 @@ public:
         CC_SAFE_DELETE(ret);
         return nullptr;
     }
-
-    bool hasUncommittedChanges() const override {
-        return false;
-    }
-    bool hasNonDefaultValue() const override {
-        return false;
-    }
-
+    bool hasUncommittedChanges() const override { return false; }
+    bool hasNonDefaultValue() const override { return false; }
     std::shared_ptr<TestJumpscareSettingV3> getSetting() const {
         return std::static_pointer_cast<TestJumpscareSettingV3>(SettingNodeV3::getSetting());
     }
 };
-
-
 
 SettingNodeV3* TestJumpscareSettingV3::createNode(float width) {
     return TestJumpscareSettingNodeV3::create(
         std::static_pointer_cast<TestJumpscareSettingV3>(shared_from_this()),
         width
     );
-}
-
-
-$execute {
-    (void)Mod::get()->registerCustomSettingType("test-jumpscare", &TestJumpscareSettingV3::parse);
 }
