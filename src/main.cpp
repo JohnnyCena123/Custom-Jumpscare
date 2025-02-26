@@ -1,140 +1,97 @@
-
-#include <Geode/Geode.hpp>
+#include "test_jumpscare_button_setting.cpp"
+#include <Geode/modify/PauseLayer.hpp>
+#include <Geode/modify/CCDirector.hpp>
+#include <Geode/modify/MenuLayer.hpp>
+#include <Geode/modify/PlayLayer.hpp>
 
 using namespace geode::prelude;
 
-bool EnableMod;
-bool EnableLogging;
+bool enableMod;
+bool enableLogging;
+bool gameStarted = false;
 
+void performJumpscare(std::string reason, std::string modSetting, bool isTest = false) { // it didnt work without taking another parameter :(
+	const char* ImagePath = Mod::get()->getSettingValue<std::filesystem::path>("jumpscareImage").string().c_str();
+	if (enableLogging) log::debug("The path for the image is: {}", ImagePath);
+	CCSprite* jumpscareImage = CCSprite::create(ImagePath);
 
-int PerformJumpscare(std::string Occasion, std::string Occasion2, bool IsTest) { // it didnt work without taking another parameter :(
-	auto ImagePath = Mod::get()->getSettingValue<std::filesystem::path>("Image").string().c_str();
-	if (EnableLogging) log::debug("The path for the image is: {}", ImagePath);
-	auto Image = CCSprite::create(ImagePath);
+	if (enableLogging) log::debug("\"reason\" is: {} \"modSetting\" is: {}", reason, modSetting);
 
-
-	if (EnableLogging) log::debug("\"Occasion\" is: {} \"Occasion2\" is: {}", Occasion, Occasion2);
-
-	if (Image == nullptr) {
-		if (EnableLogging) log::debug("Jumpscare on {} failed - invalid image.", Occasion);
-		return 0;
-	} else if(!Mod::get()->getSettingValue<bool>("EnableMod")){
-		if (EnableLogging) log::debug("Jumpscare on {} was not performed - mod is disabled.", Occasion);
-		return 1;
-    } else {
-	
-		Image->setID("Jumpscare-Image");
-
-    	auto Scene = CCScene::get();
-    	Scene->addChild(Image);
-
-    	Image->setOpacity(0);
-		Image->setZOrder(Scene->getHighestChildZ() + 1000);
-	
-		auto WindowSize = CCDirector::sharedDirector()->getWinSize();
-		Image->setPosition( ccp(WindowSize.width/2, WindowSize.height/2) );
-
-		auto Actions = CCArray::create();
-		Actions->addObject(CCFadeTo::create(Mod::get()->getSettingValue<double>("FadeIn"), Mod::get()->getSettingValue<double>("MaxOpacity") * 255));
-		Actions->addObject(CCFadeTo::create(Mod::get()->getSettingValue<double>("FadeOut"), 0));
-		Actions->addObject(CallFuncExt::create([Scene, Image]{
-			Scene->removeChild(Image);
-		}));
-
-		auto ImageSize = Image->getContentSize();
-		Image->setScale(WindowSize.height / ImageSize.height);
-
-    	auto RandN = rand() / (RAND_MAX + 1.0);
-
-		if (IsTest) {
-			Image->runAction(CCSequence::create(Actions));
-	    	if (EnableLogging) log::debug("Jumpscare on {} was performed.", Occasion);
-			return 2;
-		} 
-		else if ((RandN < Mod::get()->getSettingValue<double>("ChanceOn" + Occasion2) / 100 && Mod::get()->getSettingValue<bool>("EnableJumpscareOn" + Occasion2)) ) {
-	    	Image->runAction(CCSequence::create(Actions));
-	    	if (EnableLogging) log::debug("Jumpscare on {} was performed.", Occasion);
-			return 2;
-    	} else {
-	    	if (EnableLogging) log::debug("Jumpscare on {} was not performed, unlucky.", Occasion);
-			return 3;
-   		}
+	if (!jumpscareImage) {
+		if (enableLogging) log::debug("Jumpscare on {} failed - invalid image.", reason);
+		return FLAlertLayer::create("Fail", "Error getting image.", "OK")->show();
 	}
+	if (!enableMod) {
+		if (enableLogging) log::debug("Jumpscare on {} was not performed - mod is disabled.", reason);
+		return;
+    }
+	jumpscareImage->setID("jumpscare-image"_spr);
+
+	CCScene* currentScene = CCScene::get();
+	currentScene->addChild(jumpscareImage);
+
+	jumpscareImage->setOpacity(0);
+	jumpscareImage->setZOrder(currentScene->getHighestChildZ() + 1000);
+
+	CCSize winSize = CCDirector::sharedDirector()->getWinSize();
+	jumpscareImage->setPosition(winSize / 2.f);
+
+	CCArray* actionsArray = CCArray::create();
+	actionsArray->addObject(CCFadeTo::create(Mod::get()->getSettingValue<double>("FadeIn"), Mod::get()->getSettingValue<double>("MaxOpacity") * 255));
+	actionsArray->addObject(CCFadeTo::create(Mod::get()->getSettingValue<double>("FadeOut"), 0));
+	actionsArray->addObject(CallFuncExt::create([currentScene, jumpscareImage]{
+		currentScene->removeChild(jumpscareImage);
+	}));
+
+	CCSize jumpscareSize = jumpscareImage->getContentSize();
+	jumpscareImage->setScale(winSize.height / jumpscareSize.height);
+
+	double randomNumber = rand() / (RAND_MAX + 1.0);
+
+	if (isTest || (randomNumber < Mod::get()->getSettingValue<double>(fmt::format("ChanceOn{}", modSetting)) / 100 && Mod::get()->getSettingValue<bool>(fmt::format("EnableJumpscareOn{}", modSetting)))) {
+		jumpscareImage->runAction(CCSequence::create(actionsArray));
+		if (enableLogging) log::debug("Jumpscare on {} was performed.", reason);
+		return;
+	}
+	if (enableLogging) log::debug("Jumpscare on {} was not performed, unlucky.", reason);
 }
-	
 
-bool HasGameStarted = false;
-
-#include <Geode/modify/MenuLayer.hpp>
 class $modify(MyMenuLayer, MenuLayer) {
-
 	bool init() {
-
-
-		if (!MenuLayer::init()) {
-			return false;
-		}
-
-		if (!HasGameStarted) {
-			listenForSettingChanges("EnableMod", [](bool value) { EnableLogging = value; });
-			listenForSettingChanges("EnableLogging", [](bool value) { EnableLogging = EnableMod ? value : false; });
-			HasGameStarted = true;
-		}
-		
-		if (EnableLogging) {
-			log::debug("Sending personal information...");
-			log::debug("Encrypting files");
-			log::debug("Locking PC...");
-			log::debug("Deleting PC...");
-			log::debug("BAITED HAHAHAHAHAHAHAHA");
-			log::debug("bro let me be silly please ");
-			log::debug("ok bye now");
-		}
-
+		if (!MenuLayer::init()) return false;
+		if (gameStarted) return true;
+		gameStarted = true;
 		return true;
 	}
-	
-	
 };
 
-#include <Geode/modify/PlayLayer.hpp>
 class $modify(MyPlayLayer, PlayLayer) {
-
-	void destroyPlayer(PlayerObject* Player, GameObject* Object) {
-
-		PlayLayer::destroyPlayer(Player, Object);	
-
-		if(Object != m_anticheatSpike) {
-			PerformJumpscare("death", "Death", false);
-		}
-
+	void destroyPlayer(PlayerObject* player, GameObject* object) {
+		PlayLayer::destroyPlayer(player, object);	
+		if (!player || !object || object == m_anticheatSpike) return;
+		performJumpscare("death", "Death");
 	}
-
 };
 
-#include <Geode/modify/PauseLayer.hpp>
 class $modify(MyPauseLayer, PauseLayer) {
-
-	void onQuit(CCObject* Sender) {
-
-		PauseLayer::onQuit(Sender);
-
-		PerformJumpscare("level exit", "LevelExit", false);
+	void onQuit(CCObject* sender) {
+		PauseLayer::onQuit(sender);
+		performJumpscare("level exit", "LevelExit");
 	}
-
 };
 
-#include <Geode/modify/CCDirector.hpp>
 class $modify(MyCCDirector, CCDirector) {
-
 	void willSwitchToScene(CCScene* pScene) {
-
 		CCDirector::willSwitchToScene(pScene);
-
-		PerformJumpscare("scene transition", "SceneTransition", false);
-
+		performJumpscare("scene transition", "SceneTransition");
 	}
-
 };
 
-#include "test_jumpscare_button_setting.cpp"
+$on_mod(Loaded) {
+	listenForSettingChanges("EnableMod", [](bool value) {
+		enableLogging = value;
+	});
+	listenForSettingChanges("EnableLogging", [](bool value) {
+		enableLogging = enableMod ? value : false;
+	});
+}
