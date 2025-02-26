@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Geode/loader/SettingV3.hpp>
 #include <Geode/loader/Mod.hpp>
 

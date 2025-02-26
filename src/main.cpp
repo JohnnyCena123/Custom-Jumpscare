@@ -1,4 +1,3 @@
-#include "TestJumpscareSetting.hpp"
 #include <Geode/modify/PauseLayer.hpp>
 #include <Geode/modify/CCDirector.hpp>
 #include <Geode/modify/MenuLayer.hpp>
@@ -97,3 +96,5 @@ $on_mod(Loaded) {
 		enableLogging = enableMod ? value : false;
 	});
 }
+
+#include "TestJumpscareSetting.hpp" //TODO: why must this be at the end of the cpp file?
