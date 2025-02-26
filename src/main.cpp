@@ -11,9 +11,9 @@ bool enableLogging;
 bool gameStarted = false;
 
 void performJumpscare(std::string reason, std::string modSetting, bool isTest = false) { // it didnt work without taking another parameter :(
-	const char* ImagePath = Mod::get()->getSettingValue<std::filesystem::path>("jumpscareImage").string().c_str();
-	if (enableLogging) log::debug("The path for the image is: {}", ImagePath);
-	CCSprite* jumpscareImage = CCSprite::create(ImagePath);
+	const std::string& imagePath = Mod::get()->getSettingValue<std::filesystem::path>("jumpscareImage").string();
+	if (enableLogging) log::debug("The path for the image is: {}", imagePath);
+	CCSprite* jumpscareImage = CCSprite::create(imagePath.c_str());
 
 	if (enableLogging) log::debug("\"reason\" is: {} \"modSetting\" is: {}", reason, modSetting);
 
@@ -88,6 +88,7 @@ class $modify(MyCCDirector, CCDirector) {
 };
 
 $on_mod(Loaded) {
+	(void) Mod::get()->registerCustomSettingType("test-jumpscare", &TestJumpscareSettingV3::parse);
 	listenForSettingChanges("EnableMod", [](bool value) {
 		enableLogging = value;
 	});

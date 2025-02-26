@@ -83,8 +83,3 @@ SettingNodeV3* TestJumpscareSettingV3::createNode(float width) {
         width
     );
 }
-
-
-$on_mod(Loaded) {
-    (void) Mod::get()->registerCustomSettingType("test-jumpscare", &TestJumpscareSettingV3::parse);
-}
