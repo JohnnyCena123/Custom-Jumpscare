@@ -87,6 +87,7 @@ class $modify(MyCCDirector, CCDirector) {
 	}
 };
 
+#include "TestJumpscareSetting.hpp" //TODO: why must this be towards the end of the cpp file?
 $on_mod(Loaded) {
 	(void) Mod::get()->registerCustomSettingType("test-jumpscare", &TestJumpscareSettingV3::parse);
 	listenForSettingChanges("EnableMod", [](bool value) {
@@ -96,5 +97,3 @@ $on_mod(Loaded) {
 		enableLogging = enableMod ? value : false;
 	});
 }
-
-#include "TestJumpscareSetting.hpp" //TODO: why must this be at the end of the cpp file?
